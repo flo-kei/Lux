@@ -24,6 +24,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 )
 
 // ApiKey stores the user's
@@ -36,15 +37,16 @@ type ApiKey struct {
 // the user's storage
 func (k *ApiKey) Store() {
 	dir, _ := os.UserHomeDir()
-	path := dir + "\\.config\\lux"
+	path := filepath.Join(dir, ".config", "lux")
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		_ = os.MkdirAll(path, os.ModePerm)
 	}
+	filePath := filepath.Join(path, "key.json")
 	var f *os.File
-	if _, err := os.Stat(path + "\\key.json"); os.IsNotExist(err) {
-		f, _ = os.Create(path + "\\key.json")
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+		f, _ = os.Create(filePath)
 	} else {
-		f, _ = os.OpenFile(path+"\\key.json", os.O_CREATE|os.O_WRONLY, 0644)
+		f, _ = os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0644)
 	}
 	b, _ := json.Marshal(&k)
 	_, e := f.Write(b)
@@ -58,8 +60,8 @@ func (k *ApiKey) Store() {
 // storage
 func (k *ApiKey) Extract() {
 	dir, _ := os.UserHomeDir()
-	path := dir + "\\.config\\lux\\key.json"
-	b, _ := ioutil.ReadFile(path)
+	filePath := filepath.Join(dir, ".config", "lux", "key.json")
+	b, _ := ioutil.ReadFile(filePath)
 	_ = json.Unmarshal(b, &k)
 }
 
